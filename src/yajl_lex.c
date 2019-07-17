@@ -539,6 +539,24 @@ yajl_lex_lex(yajl_lexer lexer, const unsigned char * jsonText,
             case '\t': case '\n': case '\v': case '\f': case '\r': case ' ':
                 startOffset++;
                 break;
+            case 'N': {
+                const char * want = "aN";
+                do {
+                    if (*offset >= jsonTextLen) {
+                        tok = yajl_tok_eof;
+                        goto lexed;
+                    }
+                    c = readChar(lexer, jsonText, offset);
+                    if (c != *want) {
+                        unreadChar(lexer, offset);
+                        lexer->error = yajl_lex_invalid_string;
+                        tok = yajl_tok_error;
+                        goto lexed;
+                    }
+                } while (*(++want));
+                tok = yajl_tok_null;
+                goto lexed;
+            }
             case 't': {
                 const char * want = "rue";
                 do {
